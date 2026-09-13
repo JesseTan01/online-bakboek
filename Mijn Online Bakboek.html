@@ -1,0 +1,1306 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Mijn Bakboek</title>
+<style>
+  :root{
+    --bg:         #FFFBFA;
+    --pink:       #F2637C;
+    --pink-dark:  #D94A63;
+    --pink-soft:  #FDE7EA;
+    --ink:        #3B2E2E;
+    --ink-soft:   #9A8985;
+    --line:       #F1E1E0;
+    --shadow:     0 2px 10px rgba(59,46,46,0.06);
+  }
+
+  *{ box-sizing:border-box; -webkit-tap-highlight-color: transparent; }
+
+  html,body{
+    margin:0; padding:0;
+    background:var(--bg);
+    color:var(--ink);
+    font-family: "Trebuchet MS", -apple-system, "Segoe UI", Roboto, sans-serif;
+    font-size:17px;
+    line-height:1.5;
+    -webkit-font-smoothing:antialiased;
+  }
+
+  h1,h2,h3{ font-weight:800; color:var(--ink); margin:0; }
+
+  header.top{
+    background: var(--bg);
+    padding: 22px 20px 16px;
+    position:sticky;
+    top:0;
+    z-index:20;
+    border-bottom: 1px solid var(--line);
+  }
+  header.top h1{
+    font-size: 1.6rem;
+    color: var(--pink-dark);
+  }
+  header.top .subtitle{
+    margin: 4px 0 0;
+    font-size: 0.9rem;
+    color: var(--ink-soft);
+  }
+
+  .search-wrap{ margin-top:14px; }
+
+  .wishlist-toggle{
+    margin-top: 10px;
+    background: none;
+    border: 1px solid var(--pink);
+    color: var(--pink-dark);
+    font-size: 0.9rem;
+    font-weight: 700;
+    padding: 8px 14px;
+    border-radius: 999px;
+    cursor: pointer;
+    min-height: 40px;
+  }
+  .wishlist-toggle:active{ background: var(--pink-soft); }
+
+  #wishlist-view{ display:none; }
+
+  .wishlist-form{
+    display:flex;
+    gap:8px;
+    margin: 6px 0 20px;
+  }
+  .wishlist-form input{
+    flex:1;
+    padding: 12px 14px;
+    border-radius: 10px;
+    border: 1px solid var(--line);
+    font-size: 1rem;
+    background:#fff;
+    color: var(--ink);
+    outline:none;
+    min-height:44px;
+  }
+  .wishlist-form input:focus{ border-color: var(--pink); }
+  .wishlist-form button{
+    background: var(--pink);
+    color:#fff;
+    border:none;
+    border-radius: 10px;
+    padding: 0 18px;
+    font-size: 0.95rem;
+    font-weight:700;
+    cursor:pointer;
+    min-height:44px;
+  }
+
+  .wishlist-item{ position:relative; }
+  .wishlist-item .delete-btn{
+    background:none;
+    border:none;
+    color: var(--ink-soft);
+    font-size: 1.3rem;
+    line-height:1;
+    cursor:pointer;
+    padding: 4px 6px;
+    min-height:44px;
+  }
+  #search{
+    width:100%;
+    padding:13px 18px;
+    border-radius: 999px;
+    border: 1px solid var(--line);
+    font-size: 1rem;
+    background: #fff;
+    color: var(--ink);
+    outline: none;
+  }
+  #search:focus{ border-color: var(--pink); }
+  #search::placeholder{ color: var(--ink-soft); }
+
+  main{
+    max-width: 760px;
+    margin: 0 auto;
+    padding: 20px 16px 60px;
+  }
+
+  /* ---------- Overzicht: ronde recept-thumbnails ---------- */
+  #recipe-list{
+    display:flex;
+    flex-direction:column;
+    gap: 30px;
+    margin-top: 6px;
+  }
+
+  .category-heading{
+    font-size: 1.05rem;
+    color: var(--pink-dark);
+    margin: 0 0 4px;
+    padding-bottom: 6px;
+    border-bottom: 2px solid var(--pink-soft);
+  }
+
+  .category-grid{
+    display:grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 24px 16px;
+  }
+  @media (min-width: 520px){
+    .category-grid{ grid-template-columns: repeat(3, 1fr); }
+  }
+
+  .recipe-entry{
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:10px;
+    background:none;
+    border:none;
+    padding: 6px;
+    cursor:pointer;
+    text-align:center;
+    min-height:44px;
+  }
+  .thumb{
+    width: 112px;
+    height: 112px;
+    border-radius: 50%;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size: 2.6rem;
+    box-shadow: var(--shadow);
+    border: 3px solid #fff;
+    outline: 1px solid var(--line);
+  }
+  .recipe-entry:active .thumb{ transform: scale(0.96); }
+  .recipe-entry h2{
+    font-size: 0.98rem;
+    font-weight:700;
+    line-height:1.25;
+  }
+  .recipe-entry .meta{
+    color: var(--ink-soft);
+    font-size: 0.8rem;
+  }
+
+  #empty-state{
+    text-align:center;
+    color: var(--ink-soft);
+    padding: 40px 10px;
+    display:none;
+    grid-column: 1 / -1;
+  }
+
+  /* ---------- Detailpagina ---------- */
+  #recipe-detail{ display:none; }
+
+  .back-btn{
+    display:inline-flex;
+    align-items:center;
+    gap:6px;
+    background:none;
+    border:none;
+    color: var(--pink-dark);
+    font-size: 1rem;
+    font-weight:700;
+    padding: 10px 4px;
+    margin: -6px 0 12px -4px;
+    cursor:pointer;
+    min-height:44px;
+  }
+
+  .detail-thumb{
+    width: 140px;
+    height: 140px;
+    border-radius: 50%;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size: 3.4rem;
+    margin: 0 auto 16px;
+    box-shadow: var(--shadow);
+    border: 4px solid #fff;
+    outline: 1px solid var(--line);
+  }
+
+  .recipe-title{
+    font-size: 1.5rem;
+    text-align:center;
+    margin: 0 0 10px;
+    line-height:1.25;
+  }
+
+  .recipe-meta-row{
+    display:flex;
+    justify-content:center;
+    flex-wrap:wrap;
+    gap: 10px 18px;
+    margin-bottom: 24px;
+    color: var(--ink-soft);
+    font-size: 0.92rem;
+  }
+  .recipe-meta-row span{ display:flex; align-items:center; gap:6px; }
+
+  .section-title{
+    font-size: 1.15rem;
+    color: var(--pink-dark);
+    margin: 28px 0 6px;
+  }
+
+  .subgroup-title{
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--ink-soft);
+    margin: 16px 0 4px;
+  }
+
+  .check-list{
+    list-style:none;
+    margin:0;
+    padding:0;
+  }
+  .check-item{
+    display:flex;
+    align-items:flex-start;
+    gap:12px;
+    padding: 12px 2px;
+    border-bottom: 1px solid var(--line);
+    min-height:44px;
+  }
+  .check-item input[type="checkbox"]{
+    appearance:none;
+    -webkit-appearance:none;
+    width:24px;
+    height:24px;
+    min-width:24px;
+    border-radius:50%;
+    border:2px solid var(--pink);
+    background:#fff;
+    position:relative;
+    cursor:pointer;
+    margin-top:2px;
+  }
+  .check-item input[type="checkbox"]:checked{
+    background: var(--pink);
+  }
+  .check-item input[type="checkbox"]:checked::after{
+    content:'✓';
+    position:absolute;
+    inset:0;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    color:#fff;
+    font-size:14px;
+    font-weight:700;
+  }
+  .check-item label{
+    flex:1;
+    cursor:pointer;
+    padding-top:1px;
+  }
+  .check-item input[type="checkbox"]:checked + label{
+    text-decoration: line-through;
+    color: var(--ink-soft);
+  }
+
+  .source-line{
+    margin-top: 28px;
+    text-align:center;
+    font-size: 0.85rem;
+    color: var(--ink-soft);
+    word-break: break-word;
+  }
+  .source-line a{ color: var(--pink-dark); }
+
+  footer.notice{
+    text-align:center;
+    color: var(--ink-soft);
+    font-size: 0.8rem;
+    padding: 10px 20px 30px;
+  }
+</style>
+</head>
+<body>
+
+<header class="top">
+  <h1>Mijn Bakboek</h1>
+  <p class="subtitle" id="recipe-count"></p>
+  <div class="search-wrap">
+    <input id="search" type="search" placeholder="Zoek een recept…" autocomplete="off" />
+  </div>
+  <button class="wishlist-toggle" onclick="showWishlist()">📝 Nog te proberen</button>
+</header>
+
+<main>
+  <div id="recipe-list"></div>
+  <p id="empty-state">Geen recepten gevonden.</p>
+
+  <div id="recipe-detail">
+    <button class="back-btn" onclick="showList()">‹ Terug naar overzicht</button>
+    <div id="detail-content"></div>
+  </div>
+
+  <div id="wishlist-view">
+    <button class="back-btn" onclick="showList()">‹ Terug naar overzicht</button>
+    <h1 class="recipe-title" style="text-align:left;">📝 Nog te proberen</h1>
+    <div class="wishlist-form">
+      <input id="wishlist-input" type="text" placeholder="Type hier..." autocomplete="off" />
+      <button onclick="addWishlistItem()">Toevoegen</button>
+    </div>
+    <ul id="wishlist-list" class="check-list"></ul>
+    <p id="wishlist-empty" style="color:var(--ink-soft); display:none;">Nog niets op je lijst — voeg hierboven iets toe!</p>
+  </div>
+</main>
+
+
+<script>
+/* =========================================================================
+   RECEPTEN-DATA
+   Nieuw recept toevoegen? Voeg een nieuw object toe aan de "recipes"-array
+   hieronder, met hetzelfde formaat. Elk recept heeft:
+   - id: unieke code (kleine letters, streepjes)
+   - category: "Zoet" of "Brood" (bepaalt onder welke kop
+     het recept in het overzicht verschijnt)
+   - title, servings, time
+   - emoji: gebruikt als rond "plaatje"
+   - color: achtergrondkleur van het ronde plaatje
+   - ingredientGroups: [{ name: "Onderdeelnaam", items: [strings] }, ...]
+   - stepGroups: [{ name: "Onderdeelnaam", steps: [strings] }, ...]
+     (gebruik één groep, bv. name: "Recept", als een recept geen
+     onderdelen zoals "Cake" en "Botercrème" heeft)
+   - source: { label, url }
+   ========================================================================= */
+const recipes = [
+  {
+    id: "chocoladetaart-guinness",
+    category: "Zoet",
+    title: "Chocoladetaart met Guinness",
+    servings: "12 porties",
+    time: "100 minuten",
+    emoji: "🍫",
+    color: "#F6D9C4",
+    source: {
+      label: "Tasty (YouTube, gemaakt door Alvin Zhou)",
+      url: "https://youtu.be/xwKGZS3EE7Q"
+    },
+    ingredientGroups: [
+      {
+        name: "Cake",
+        items: [
+          "180 g bloem",
+          "100 g cacaopoeder",
+          "1 tl zout",
+          "1½ tl baking soda",
+          "½ tl bakpoeder",
+          "355 ml Guinness",
+          "1 el vanille-extract",
+          "1 espresso",
+          "230 g roomboter, zacht",
+          "300 g suiker",
+          "3 eieren",
+          "115 g mayonaise",
+          "200 g pure chocolade, grof gehakt"
+        ]
+      },
+      {
+        name: "Botercrème",
+        items: [
+          "340 g roomboter, zacht",
+          "50 g cacaopoeder",
+          "1 el vanille-extract",
+          "250 g poedersuiker",
+          "scheutje melk"
+        ]
+      }
+    ],
+    stepGroups: [
+      {
+        name: "Cake",
+        steps: [
+          "Verwarm de oven voor op 163°C.",
+          "Vet twee springvormen van 23 cm in en bekleed ze met bakpapier.",
+          "Zeef de bloem, cacaopoeder, zout, baking soda en bakpoeder in een grote kom bij elkaar. Zet apart.",
+          "Meng in een maatbeker de Guinness, vanille-extract en de espresso. Zet apart.",
+          "Klop de boter en suiker in een grote mengkom ongeveer 5 minuten luchtig, schraap af en toe de randen schoon.",
+          "Klop de eieren er één voor één door, telkens goed opnemen voor je het volgende ei toevoegt.",
+          "Voeg de mayonaise toe en klop tot een glad, romig mengsel.",
+          "Voeg afwisselend een derde van de droge ingrediënten en een derde van het natte mengsel toe aan het beslag, telkens goed mengen, tot alles is opgenomen.",
+          "Spatel de gehakte pure chocolade door het beslag.",
+          "Verdeel het beslag gelijkmatig over de twee springvormen.",
+          "Bak ongeveer 45 minuten, tot een prikker er schoon uitkomt.",
+          "Laat de cakes 10–15 minuten afkoelen op een rooster, tot de vorm handwarm is.",
+          "Los de randen met een botermes, keer de cakes op een bord, verwijder het bakpapier en laat volledig afkoelen op een rooster."
+        ]
+      },
+      {
+        name: "Botercrème",
+        steps: [
+          "Klop de boter en vanille luchtig in een grote kom.",
+          "Voeg geleidelijk de cacaopoeder, poedersuiker en een scheutje melk toe, en blijf kloppen tot een luchtige, romige botercrème ontstaat.",
+          "Vul en bestrijk de afgekoelde cakelagen met de botercrème naar wens. Serveer en geniet!"
+        ]
+      }
+    ]
+  },
+  {
+    id: "carrot-cake",
+    category: "Zoet",
+    title: "Carrot Cake",
+    servings: "12 porties",
+    time: "65 minuten",
+    emoji: "🥕",
+    color: "#F5D9A8",
+    source: {
+      label: "Inspired Taste (Joanne Gallagher)",
+      url: "https://www.inspiredtaste.net/25753/carrot-cake-recipe/"
+    },
+    ingredientGroups: [
+      {
+        name: "Cake",
+        items: [
+          "260 g bloem",
+          "2 tl baking soda",
+          "½ tl zout",
+          "1½ tl kaneel",
+          "295 ml plantaardige olie",
+          "200 g kristalsuiker",
+          "190 g bruine basterdsuiker",
+          "1 tl vanille-extract",
+          "4 eieren",
+          "300 g geraspte wortel"
+        ]
+      },
+      {
+        name: "Frosting",
+        items: [
+          "225 g roomkaas, op kamertemperatuur",
+          "2 tl maizena (optioneel)",
+          "140 g poedersuiker",
+          "80 ml koude slagroom"
+        ]
+      }
+    ],
+    stepGroups: [
+      {
+        name: "Cake",
+        steps: [
+          "Verwarm de oven voor op 180°C. Vet twee bakvormen van 23 cm in, bekleed de bodem met bakpapier en vet die ook in (of vet en bebloem bodem en zijkanten).",
+          "Klop de bloem, baking soda, zout en kaneel in een kom goed door elkaar.",
+          "Klop in een aparte kom de olie, kristalsuiker, bruine suiker en vanille-extract. Voeg de eieren één voor één toe, telkens goed doorkloppen.",
+          "Voeg de droge ingrediënten in drie delen toe aan het natte mengsel en roer voorzichtig tot een glad beslag. Roer de geraspte wortel erdoor.",
+          "Verdeel het beslag over de twee bakvormen. Bak 35 tot 45 minuten, tot de bovenkant terugveert bij lichte aanraking en een prikker er schoon uitkomt.",
+          "Laat de cakes 15 minuten afkoelen in de vorm, stort ze daarna voorzichtig op een rooster, verwijder het bakpapier en laat volledig afkoelen voordat je gaat afsmeren."
+        ]
+      },
+      {
+        name: "Frosting",
+        steps: [
+          "Meng de maizena en poedersuiker in een kom kort door elkaar.",
+          "Klop de roomkaas in een grote kom met een handmixer ongeveer 1–2 minuten tot glad en romig.",
+          "Voeg op lage snelheid de maizena en poedersuiker toe, lepel voor lepel, tot goed gemengd.",
+          "Giet de koude slagroom erbij en klop 2–3 minuten op middelhoge snelheid tot de frosting luchtig en romig is, zoals slagroom. Laat afgedekt opstijven in de koelkast tot je gaat afsmeren.",
+          "Bestrijk de bovenkant van één cakelaag met frosting, leg de tweede laag erop en verdeel de rest van de frosting over de bovenkant. Laat de zijkanten onbedekt."
+        ]
+      }
+    ]
+  },
+  {
+    id: "red-velvet-cake",
+    category: "Zoet",
+    title: "Red Velvet Cake",
+    servings: "12 porties",
+    time: "90 minuten",
+    emoji: "🎂",
+    color: "#E8B4B8",
+    source: {
+      label: "Home Cooking Adventure (Ella)",
+      url: "https://www.homecookingadventure.com/red-velvet-cake/"
+    },
+    ingredientGroups: [
+      {
+        name: "Cake",
+        items: [
+          "270 g bloem",
+          "40 g maizena",
+          "2 el cacaopoeder",
+          "1 tl baking soda",
+          "1 tl zout",
+          "113 g roomboter, op kamertemperatuur",
+          "300 g suiker",
+          "2 eieren",
+          "220 g plantaardige olie",
+          "1 tl witte azijn",
+          "2 tl vanille-extract",
+          "240 ml karnemelk, op kamertemperatuur",
+          "30 g rode gelkleurstof"
+        ]
+      },
+      {
+        name: "Frosting",
+        items: [
+          "500 g roomkaas, op kamertemperatuur",
+          "300 g koude slagroom",
+          "1 tl vanille-extract",
+          "156 g poedersuiker"
+        ]
+      }
+    ],
+    stepGroups: [
+      {
+        name: "Cake",
+        steps: [
+          "Verwarm de oven voor op 180°C. Vet twee bakvormen van 23 cm in met boter en bebloem ze licht.",
+          "Zeef de bloem en maizena samen met de cacaopoeder, baking soda en zout in een grote kom en klop goed door elkaar.",
+          "Meng in een andere kom de boter met de suiker tot gecombineerd. Klop de eieren er één voor één door.",
+          "Meng de olie, azijn, vanille-extract en karnemelk erdoor. Voeg het bloemmengsel toe en meng tot alles goed gecombineerd is.",
+          "Voeg geleidelijk de rode gelkleurstof toe tot de gewenste kleur is bereikt.",
+          "Verdeel het beslag gelijkmatig over de twee bakvormen.",
+          "Bak ongeveer 30 minuten, tot een prikker er schoon uitkomt.",
+          "Laat de bakvormen 10 minuten afkoelen op een rooster.",
+          "Haal de cakes uit de vorm en laat ze volledig afkoelen."
+        ]
+      },
+      {
+        name: "Frosting en afwerking",
+        steps: [
+          "Zeef de poedersuiker in een kom.",
+          "Klop de roomkaas met de poedersuiker en vanille-extract tot glad.",
+          "Klop in een andere kom de slagroom tot stijve pieken. Spatel dit geleidelijk door het roomkaasmengsel tot goed gecombineerd.",
+          "Snijd de bovenkant van de cakes recht af voor een vlak oppervlak. Verkruimel de afgesneden stukjes en bewaar apart.",
+          "Leg één cakelaag op je serveerschaal en verdeel er iets minder dan de helft van de frosting over. Leg de tweede laag erop en verdeel de rest van de frosting over de bovenkant en zijkanten.",
+          "Versier eventueel met de bewaarde cakekruimels."
+        ]
+      }
+    ]
+  },
+  {
+    id: "chocolate-chip-cookies",
+    category: "Zoet",
+    title: "Chocolate Chip Cookies",
+    servings: "20 koekjes",
+    time: "60 minuten",
+    emoji: "🍪",
+    color: "#D9A66C",
+    source: {
+      label: "Sugar Spun Run (Sam Merritt)",
+      url: "https://sugarspunrun.com/thick-chocolate-chip-cookies/#wprm-recipe-container-54369"
+    },
+    ingredientGroups: [
+      {
+        name: "Koekjes",
+        items: [
+          "230 g roomboter, zacht",
+          "200 g bruine basterdsuiker",
+          "100 g kristalsuiker",
+          "2 eieren",
+          "1 tl vanille-extract",
+          "390 g bloem",
+          "80 g maizena",
+          "2 tot 3 el cacaopoeder (optioneel, voor donkere koekjes)",
+          "2 tl bakpoeder",
+          "¼ tl baking soda",
+          "¾ tl zout",
+          "100 g witte chocolade, gehakt",
+          "100 g pure chocolade, gehakt",
+          "200 g melkchocolade, gehakt"
+        ]
+      }
+    ],
+    stepGroups: [
+      {
+        name: "Koekjes",
+        steps: [
+          "Klop de boter, bruine suiker en kristalsuiker in een grote kom luchtig en romig.",
+          "Voeg de eieren en het vanille-extract toe en roer goed door.",
+          "Zeef in een aparte kom de bloem, maizena, bakpoeder, baking soda en zout samen door elkaar. (Optioneel: voeg hier ook de cacaopoeder toe voor donkere koekjes.)",
+          "Voeg de droge ingrediënten geleidelijk toe aan het botermengsel en roer tot alles gecombineerd is.",
+          "Spatel de witte, pure en melkchocolade erdoor tot gelijkmatig verdeeld.",
+          "Schep met een ijsschep bolletjes van het deeg. Leg ze op een bord of bakplaat, dek af en laat minstens 30 minuten opstijven in de koelkast — of vries de bolletjes in om op een later moment af te bakken. Verwarm ondertussen de oven voor op 190°C en bekleed een bakplaat met bakpapier.",
+          "Leg de bolletjes deeg op de bakplaat, met minstens 5 cm ertussen.",
+          "Bak 13 tot 14 minuten, tot de randen net lichtbruin beginnen te kleuren. Laat de koekjes volledig afkoelen op de bakplaat voor je ze verplaatst — ze zijn nog broos als ze warm zijn."
+        ]
+      }
+    ]
+  },
+  {
+    id: "slagroomtaart",
+    category: "Zoet",
+    title: "Slagroomtaart",
+    servings: "12 porties",
+    time: "45 minuten",
+    emoji: "🍰",
+    color: "#F7D9DA",
+    ingredientGroups: [
+      {
+        name: "Slagroomtaart",
+        items: [
+          "1 pak Dr. Oetker Biscuittaart Naturel",
+          "5 eieren",
+          "50 ml water",
+          "1 pot aardbeienjam",
+          "750 ml slagroom",
+          "75 g poedersuiker",
+          "100 g amandelschaafsel",
+          "400 g aardbeien"
+        ]
+      }
+    ],
+    stepGroups: [
+      {
+        name: "Biscuit bakken",
+        steps: [
+          "Verwarm de oven voor op 170°C, met het rooster iets onder het midden van de oven.",
+          "Bekleed de bodem van een springvorm (Ø 23 cm) met bakpapier, sluit de vorm en vet de randen in met boter.",
+          "Doe de biscuitmix, eieren en water in een beslagkom. Meng eerst kort op de laagste stand, klop daarna op de hoogste stand minstens 5 minuten tot een luchtig beslag.",
+          "Verdeel het beslag over de springvorm en strijk glad.",
+          "Bak de taart 30 tot 40 minuten, tot hij gaar en goudbruin is. Controleer met een satéprikker in het midden: komt die er droog uit, dan is de taart klaar.",
+          "Laat de taart 10 minuten afkoelen op een rooster en verwijder dan de rand van de springvorm.",
+          "Leg de taart ondersteboven op een taartrooster, verwijder voorzichtig de bodem en laat de taart volledig afkoelen."
+        ]
+      },
+      {
+        name: "Opbouwen en afwerken",
+        steps: [
+          "Klop de slagroom met de poedersuiker op tot een stevig slagroommengsel.",
+          "Snijd de afgekoelde taart in 3 gelijke plakken.",
+          "Besmeer de onderste laag met de helft van de jam en een laag slagroom. Leg de tweede laag erop en herhaal met de rest van de jam en een laag slagroom.",
+          "Leg de derde laag erop en smeer de hele taart rondom in met de resterende slagroom.",
+          "Rooster het amandelschaafsel in een droge pan tot goudbruin en laat afkoelen. Bedek de zijkant van de taart ermee.",
+          "Decoreer de bovenkant met de aardbeien en een beetje poedersuiker."
+        ]
+      }
+    ]
+  },
+  {
+    id: "appeltaart",
+    category: "Zoet",
+    title: "Appeltaart",
+    servings: "12 porties",
+    time: "100 minuten",
+    emoji: "🍎",
+    color: "#E3B77D",
+    ingredientGroups: [
+      {
+        name: "Appeltaart",
+        items: [
+          "1 pak Koopmans Appeltaart",
+          "175 g roomboter, op kamertemperatuur",
+          "1 ei",
+          "1 kg Goudreinette appels (ca. 6 stuks)",
+          "2 el kaneel"
+        ]
+      }
+    ],
+    stepGroups: [
+      {
+        name: "Deeg maken",
+        steps: [
+          "Verwarm de oven voor op 180°C, met het rooster iets onder het midden van de oven.",
+          "Vet een springvorm (Ø 23 cm) in met boter.",
+          "Roer de boter zacht in een beslagkom. Klop het ei los in een kommetje en doe ⅔ hiervan bij de boter, samen met de appeltaartmix.",
+          "Kneed met een mixer met deeghaken (of met de hand) tot een samenhangend deeg. Is het deeg te plakkerig, zet het dan even in de koelkast."
+        ]
+      },
+      {
+        name: "Vulling maken",
+        steps: [
+          "Schil de appels, verwijder de klokhuizen en snijd de appels in blokjes.",
+          "Meng de appelblokjes met de kaneel."
+        ]
+      },
+      {
+        name: "Opbouwen en bakken",
+        steps: [
+          "Bekleed de bodem en rand van de springvorm met ⅔ van het deeg.",
+          "Vul de vorm met het appelmengsel en druk dit aan.",
+          "Bestuif het aanrecht met wat bloem. Rol van het resterende deeg dunne rolletjes, druk ze iets plat en leg ze kruislings over het appelmengsel.",
+          "Bestrijk de reepjes en de rand van de taart met de rest van het losgeklopte ei.",
+          "Bak de appeltaart 60 tot 75 minuten, tot hij gaar en goudbruin is.",
+          "Laat de appeltaart ongeveer 1 uur afkoelen voordat je de springvorm verwijdert."
+        ]
+      }
+    ]
+  },
+  {
+    id: "bananenbrood",
+    category: "Zoet",
+    title: "Bananenbrood",
+    servings: "10 porties",
+    time: "70 minuten",
+    emoji: "🍌",
+    color: "#F2D06B",
+    source: {
+      label: "Miljuschka (Miljuschka Witzenhausen)",
+      url: "https://miljuschka.nl/het-beste-bananenbrood-recept-ooit/"
+    },
+    ingredientGroups: [
+      {
+        name: "Bananenbrood",
+        items: [
+          "125 g boter, gesmolten",
+          "200 g suiker",
+          "2 grote eieren",
+          "60 ml melk",
+          "1 tl vanille-extract",
+          "3 rijpe bananen",
+          "250 g bloem",
+          "1 tl baking soda",
+          "snufje zout",
+          "100 g melkchocolade, gehakt",
+          "1 extra banaan voor de bovenkant (optioneel)"
+        ]
+      }
+    ],
+    stepGroups: [
+      {
+        name: "Bananenbrood",
+        steps: [
+          "Verwarm de oven voor op 160°C. Bekleed een cakeblik van 25 cm met bakpapier of vet het goed in.",
+          "Meng de suiker met de boter en klop goed door elkaar. Voeg de eieren één voor één toe en meng steeds even door.",
+          "Roer de melk en het vanille-extract erdoor. Voeg de bloem, baking soda en het zout toe en roer tot het net gemengd is.",
+          "Prak de bananen met een vork of pureer ze in een blender. Voeg toe aan het beslag en roer om tot goed verdeeld. Meng er als laatste de gehakte melkchocolade door.",
+          "Stort het beslag in het cakeblik en bak ongeveer 50 tot 65 minuten, tot een houten prikker er droog uitkomt.",
+          "Wil je de extra banaan gebruiken? Snijd deze in de lengte doormidden en druk de bolle kanten in het beslag voor het bakken.",
+          "Laat het brood 10 minuten afkoelen in het blik, stort het dan uit en laat verder afkoelen."
+        ]
+      }
+    ]
+  },
+  {
+    id: "tiramisu",
+    category: "Zoet",
+    title: "Tiramisu",
+    servings: "12 porties",
+    time: "140 minuten",
+    emoji: "☕",
+    color: "#C9A27A",
+    source: {
+      label: "Laura's Bakery",
+      url: "https://www.laurasbakery.nl/tiramisu-zonder-ei/"
+    },
+    ingredientGroups: [
+      {
+        name: "Tiramisu",
+        items: [
+          "2 kopjes koffie (ca. 280 ml totaal), afgekoeld",
+          "scheutje amaretto",
+          "250 ml slagroom",
+          "500 g mascarpone",
+          "50 g poedersuiker",
+          "2 pakken lange vingers (ca. 56 koekjes)",
+          "2 el cacaopoeder"
+        ]
+      }
+    ],
+    stepGroups: [
+      {
+        name: "Tiramisu",
+        steps: [
+          "Zet twee sterke kopjes koffie en laat afkoelen. Meng er een scheutje amaretto doorheen.",
+          "Doe de slagroom, mascarpone en poedersuiker in een kom en mix 3 tot 5 minuten tot een romig, stevig en glad mengsel.",
+          "Dip de helft van de lange vingers (ongeveer 28 stuks) in het koffiemengsel en leg ze als bodem in een rechthoekige ovenschaal (ca. 28 x 15 cm).",
+          "Verdeel de helft van het mascarponemengsel over de lange vingers.",
+          "Herhaal met de resterende lange vingers en koffie, en verdeel het overige mascarponemengsel erover. Strijk glad en bestrooi met cacaopoeder.",
+          "Zet de tiramisu minstens 2 uur, maar bij voorkeur een hele nacht, in de koelkast voordat je hem serveert."
+        ]
+      }
+    ]
+  },
+  {
+    id: "monchou-taart",
+    category: "Zoet",
+    title: "MonChou Taart",
+    servings: "14 porties",
+    time: "135 minuten",
+    emoji: "🍒",
+    color: "#E7A9AE",
+    source: {
+      label: "Laura's Bakery",
+      url: "https://www.laurasbakery.nl/monchou-taart/"
+    },
+    ingredientGroups: [
+      {
+        name: "MonChou Taart",
+        items: [
+          "1 pak bastognekoeken",
+          "100 g roomboter",
+          "250 ml slagroom",
+          "100 g suiker",
+          "8 g bourbon vanillesuiker",
+          "200 g MonChou (kleine, stevige pakjes)",
+          "1 blik kersenvulling"
+        ]
+      }
+    ],
+    stepGroups: [
+      {
+        name: "MonChou Taart",
+        steps: [
+          "Maal de bastognekoeken fijn in een keukenmachine. Smelt de boter in een pannetje en meng er de koekkruimels doorheen tot een stevige massa.",
+          "Schep het koek-botermengsel in een met bakpapier beklede taartvorm (Ø 24 cm). Verdeel gelijkmatig over de bodem en druk stevig aan. Zet de bodem in de koelkast.",
+          "Klop ondertussen de slagroom met de suiker, bourbon vanillesuiker en MonChou in een kom tot een romig mengsel.",
+          "Schep de vulling op de afgekoelde bodem, verdeel gelijkmatig en zet de taart minstens 2 uur in de koelkast tot de vulling stevig is.",
+          "Blend het blik kersenvulling kort tot een gladdere massa en verdeel dit over de taart."
+        ]
+      }
+    ]
+  },
+  {
+    id: "cheesecake",
+    category: "Zoet",
+    title: "Cheesecake",
+    servings: "12 porties",
+    time: "8 uur",
+    emoji: "🧀",
+    color: "#F5E1B8",
+    source: {
+      label: "Sugar Spun Run (Sam Merritt)",
+      url: "https://sugarspunrun.com/best-cheesecake-recipe/#wprm-recipe-container-15637"
+    },
+    ingredientGroups: [
+      {
+        name: "Bodem",
+        items: [
+          "200 g digestive koekjes, fijngemalen",
+          "100 g boter, gesmolten"
+        ]
+      },
+      {
+        name: "Cheesecake",
+        items: [
+          "910 g roomkaas, op kamertemperatuur",
+          "200 g suiker",
+          "160 g zure room",
+          "1½ tl vanille-extract",
+          "⅛ tl zout",
+          "4 eieren, op kamertemperatuur, licht losgeklopt"
+        ]
+      }
+    ],
+    stepGroups: [
+      {
+        name: "Bodem",
+        steps: [
+          "Verwarm de oven voor op 160°C.",
+          "Meng de fijngemalen digestive koekjes met de gesmolten boter tot een vochtig kruimelmengsel.",
+          "Druk het mengsel stevig in de bodem en tegen de rand van een springvorm van 23 cm. Zet apart."
+        ]
+      },
+      {
+        name: "Cheesecake",
+        steps: [
+          "Roer de roomkaas in een grote kom glad en romig. Klop niet te veel, anders komt er te veel lucht in het beslag.",
+          "Voeg de suiker toe en roer opnieuw tot romig.",
+          "Voeg de zure room, vanille-extract en het zout toe en roer tot alles goed gemengd is. Schraap tussendoor de randen en bodem van de kom schoon.",
+          "Voeg de losgeklopte eieren op lage snelheid één voor één toe en roer telkens net tot het ei is opgenomen. Schraap na het laatste ei nogmaals de kom schoon.",
+          "Giet het beslag in de springvorm op de bodem. Zet de vorm voor de zekerheid op een met aluminiumfolie beklede bakplaat, voor het geval er iets lekt.",
+          "Bak in het midden van de oven 50 tot 75 minuten, tot de randen licht gerezen en lichtbruin zijn en het midden nog een beetje trilt als je de vorm zachtjes beweegt.",
+          "Laat de cheesecake 10 minuten afkoelen buiten de oven. Los daarna met een mes de bodem los van de rand van de springvorm (zonder de rand te verwijderen) om scheuren te voorkomen.",
+          "Laat de cheesecake nog 1 tot 2 uur verder afkoelen tot bijna kamertemperatuur, zet hem dan afgedekt minstens 6 uur (of een hele nacht) in de koelkast voor het serveren."
+        ]
+      }
+    ]
+  },
+  {
+    id: "chocolade-fudge-brownies",
+    category: "Zoet",
+    title: "Chocolade Fudge Brownies",
+    servings: "20 stuks",
+    time: "40 minuten",
+    emoji: "🍫",
+    color: "#D7B79E",
+    source: {
+      label: "Libelle",
+      url: "https://www.libelle.nl/persoonlijk/vandaag-maken-we-chocolade-fudge-brownies~b0aca485/"
+    },
+    ingredientGroups: [
+      {
+        name: "Brownies",
+        items: [
+          "3 eieren",
+          "220 g suiker",
+          "2 el suiker",
+          "300 g pure chocolade, in stukjes",
+          "220 g boter",
+          "2 el vanille-extract",
+          "1 espresso",
+          "70 g zelfrijzend bakmeel"
+        ]
+      }
+    ],
+    stepGroups: [
+      {
+        name: "Brownies",
+        steps: [
+          "Verwarm de oven voor op 180°C. Bekleed een rechthoekige ovenschaal (ongeveer 20x35 cm) met bakpapier.",
+          "Doe de eieren met de suiker (220 g) in een grote kom. Klop met een mixer tot een glad, licht mengsel.",
+          "Smelt de chocolade samen met de boter in een kom boven een pan heet water (au bain-marie). Zorg dat de onderkant van de kom het water niet raakt. Roer tot een gladde massa.",
+          "Meng het vanille-extract, 2 el suiker en de espresso in een kopje en roer goed door elkaar.",
+          "Doe alle vloeibare ingrediënten bij elkaar en roer alles goed door.",
+          "Schep het bakmeel voorzichtig door het mengsel.",
+          "Giet het beslag in de ovenschaal en bak de brownies in 35 tot 40 minuten gaar.",
+          "Laat afkoelen en zet de schaal eventueel nog even in de koelkast — koud zijn de brownies makkelijker te snijden.",
+          "Snijd de brownies met een scherp mes in blokjes."
+        ]
+      }
+    ]
+  },
+  {
+    id: "everything-bagels",
+    category: "Brood",
+    title: "Everything Bagels",
+    servings: "8 bagels",
+    time: "3 uur",
+    emoji: "🥯",
+    color: "#D9B382",
+    source: {
+      label: "Sally's Baking Addiction (Sally McKenney)",
+      url: "https://sallysbakingaddiction.com/homemade-everything-bagels/"
+    },
+    ingredientGroups: [
+      {
+        name: "Deeg",
+        items: [
+          "360 ml warm water (ca. 40°C)",
+          "2¾ tl instant of actieve gist",
+          "520 g bloem (11-12% eiwit)",
+          "1 el bruine basterdsuiker",
+          "2 tl zout",
+          "1 el olijfolie (voor het invetten van de kom)"
+        ]
+      },
+      {
+        name: "Waterbad",
+        items: [
+          "2 liter water",
+          "50 g honing"
+        ]
+      },
+      {
+        name: "Everything Seasoning",
+        items: [
+          "2 el maanzaad",
+          "1 el zwarte sesamzaad",
+          "1 el witte sesamzaad",
+          "1 el gedroogde uisnippers",
+          "1 el gedroogde knoflooksnippers",
+          "1 el grof zeezout",
+          "1 eiwit",
+          "1 el water"
+        ]
+      }
+    ],
+    stepGroups: [
+      {
+        name: "Deeg maken",
+        steps: [
+          "Klop het warme water en de gist los in de kom van je mixer met deeghaak. Dek af en laat 5 minuten staan.",
+          "Voeg de bloem, bruine basterdsuiker en het zout toe. Mix 2 minuten op lage snelheid. Het deeg is stevig en ziet er droog uit.",
+          "Kneed het deeg (in de mixer of met de hand) nog 6 tot 7 minuten, tot het soepel en licht plakkerig aanvoelt.",
+          "Vet een grote kom in met olie, leg het deeg erin en keer het om zodat het rondom bedekt is. Dek af en laat op kamertemperatuur 60 tot 90 minuten rijzen, tot het in volume is verdubbeld."
+        ]
+      },
+      {
+        name: "Vormen",
+        steps: [
+          "Bekleed twee bakplaten met bakpapier. Sla het deeg terug en verdeel het in 8 gelijke stukken. Rol elk stuk tot een bal.",
+          "Duw met je wijsvinger een gat van ongeveer 4 tot 5 cm doorsnee door het midden van elke bal. Dek losjes af met een theedoek en laat een paar minuten rusten terwijl je het waterbad voorbereidt."
+        ]
+      },
+      {
+        name: "Koken en bakken",
+        steps: [
+          "Verwarm de oven voor op 220°C.",
+          "Vul een grote, brede pan met 2 liter water en roer de honing erdoor. Breng aan de kook en zet dan het vuur iets lager. Kook de bagels 1 minuut per kant, 2 tot 4 tegelijk.",
+          "Meng ondertussen de maanzaad, zwarte en witte sesamzaad, uisnippers, knoflooksnippers en het grove zeezout door elkaar voor de topping.",
+          "Klop het eiwit los met de el water. Bestrijk elke bagel hiermee en dip ze vervolgens in het toppingmengsel. Verdeel de bagels over de bakplaten.",
+          "Bak 20 tot 25 minuten, tot de bagels donkergoudbruin zijn — draai de bakplaten halverwege om.",
+          "Laat de bagels 20 minuten afkoelen op de bakplaat en laat ze daarna volledig afkoelen op een rooster."
+        ]
+      }
+    ]
+  },
+  {
+    id: "no-knead-bread",
+    category: "Brood",
+    title: "No-Knead Bread",
+    servings: "1 brood",
+    time: "13 uur",
+    emoji: "🍞",
+    color: "#E0C39A",
+    source: {
+      label: "Scratch Pantry (Acre Homestead)",
+      url: "https://www.scratchpantry.com/recipes/no-knead-bread"
+    },
+    ingredientGroups: [
+      {
+        name: "No-Knead Bread",
+        items: [
+          "360 g bloem",
+          "2 tl zout",
+          "½ tl actieve droge gist",
+          "350 ml water (ca. 40°C)"
+        ]
+      }
+    ],
+    stepGroups: [
+      {
+        name: "No-Knead Bread",
+        steps: [
+          "Meng de bloem, het water, de gist en het zout in een grote kom tot een ruw, plakkerig deeg ontstaat.",
+          "Dek af en laat 12 tot 18 uur op kamertemperatuur staan.",
+          "Leg het deeg op een goed bebloemd werkvlak. Vouw het deeg naar binnen door de buitenranden naar het midden te trekken, tot je een strakke, gladde bal krijgt die zijn vorm behoudt.",
+          "Bekleed een kom met bakpapier met wat overhangende rand en bestrooi het papier met bloem.",
+          "Leg de deegbal in de voorbereide kom, dek af en laat 30 minuten rijzen.",
+          "Verwarm ondertussen de oven voor op 230°C en zet een ovenvaste pan met deksel (Dutch oven) mee in de oven om voor te verwarmen.",
+          "Haal voorzichtig het deksel van de hete pan zodra de oven is voorverwarmd. Til de deegbal met behulp van het bakpapier in de pan. Kerf de bovenkant van het brood in met een mes. Doe het deksel er weer op en bak 30 minuten.",
+          "Haal het deksel eraf en bak nog 10 minuten verder.",
+          "Til het brood met het bakpapier op een rooster en laat minstens 1 uur afkoelen voor je het aansnijdt."
+        ]
+      }
+    ]
+  }
+];
+
+/* =========================================================================
+   RENDER-LOGICA (hoeft niet aangepast te worden bij nieuwe recepten)
+   ========================================================================= */
+
+const listEl = document.getElementById('recipe-list');
+const emptyEl = document.getElementById('empty-state');
+const detailEl = document.getElementById('recipe-detail');
+const detailContent = document.getElementById('detail-content');
+const countEl = document.getElementById('recipe-count');
+const searchEl = document.getElementById('search');
+
+function updateCount(n){
+  countEl.textContent = n + (n === 1 ? " recept" : " recepten");
+}
+
+const categoryOrder = ["Zoet", "Brood"];
+
+function renderList(filter){
+  const q = (filter || "").trim().toLowerCase();
+  listEl.innerHTML = "";
+  let shown = 0;
+
+  const matches = recipes.filter(r => {
+    const allIngredients = r.ingredientGroups.map(g => g.items.join(" ")).join(" ");
+    const haystack = (r.title + " " + allIngredients).toLowerCase();
+    return !q || haystack.includes(q);
+  });
+
+  const categories = categoryOrder.filter(c => matches.some(r => r.category === c));
+  matches.forEach(r => {
+    if (!categories.includes(r.category)) categories.push(r.category);
+  });
+
+  categories.forEach(cat => {
+    const items = matches.filter(r => r.category === cat);
+    if (items.length === 0) return;
+
+    const section = document.createElement('div');
+    section.className = 'category-section';
+
+    const heading = document.createElement('h2');
+    heading.className = 'category-heading';
+    heading.textContent = cat;
+    section.appendChild(heading);
+
+    const grid = document.createElement('div');
+    grid.className = 'category-grid';
+
+    items.forEach(r => {
+      shown++;
+      const btn = document.createElement('button');
+      btn.className = 'recipe-entry';
+      btn.onclick = () => showDetail(r.id);
+      btn.innerHTML = `
+        <div class="thumb" style="background:${r.color}">${r.emoji}</div>
+        <h2>${r.title}</h2>
+        <div class="meta">${r.servings} · ${r.time}</div>
+      `;
+      grid.appendChild(btn);
+    });
+
+    section.appendChild(grid);
+    listEl.appendChild(section);
+  });
+
+  emptyEl.style.display = shown === 0 ? 'block' : 'none';
+  updateCount(recipes.length);
+}
+
+function getChecked(key){
+  try{
+    return JSON.parse(localStorage.getItem(key) || "{}");
+  }catch(e){ return {}; }
+}
+function setChecked(key, state){
+  try{ localStorage.setItem(key, JSON.stringify(state)); }catch(e){}
+}
+
+function renderDetail(r){
+  let html = `<div class="detail-thumb" style="background:${r.color}">${r.emoji}</div>`;
+  html += `<h1 class="recipe-title">${r.title}</h1>`;
+  html += `<div class="recipe-meta-row">
+      <span>🍽️ ${r.servings}</span>
+      <span>⏱️ ${r.time}</span>
+    </div>`;
+
+  html += `<h2 class="section-title">Ingrediënten</h2>`;
+  r.ingredientGroups.forEach((group, gi) => {
+    const ingKey = 'kookboek-ing-' + r.id + '-' + gi;
+    const ingState = getChecked(ingKey);
+    html += `<h3 class="subgroup-title">${group.name}</h3><ul class="check-list">`;
+    group.items.forEach((item, i) => {
+      const cid = `ing-${r.id}-${gi}-${i}`;
+      const checked = ingState[i] ? 'checked' : '';
+      html += `<li class="check-item">
+        <input type="checkbox" id="${cid}" data-key="${ingKey}" data-index="${i}" class="ing-check" ${checked}>
+        <label for="${cid}">${item}</label>
+      </li>`;
+    });
+    html += `</ul>`;
+  });
+
+  html += `<h2 class="section-title">Bereiding</h2>`;
+  r.stepGroups.forEach((group, gi) => {
+    const stepKey = 'kookboek-step-' + r.id + '-' + gi;
+    const stepState = getChecked(stepKey);
+    html += `<h3 class="subgroup-title">${group.name}</h3><ul class="check-list">`;
+    group.steps.forEach((step, i) => {
+      const cid = `step-${r.id}-${gi}-${i}`;
+      const checked = stepState[i] ? 'checked' : '';
+      html += `<li class="check-item">
+        <input type="checkbox" id="${cid}" data-key="${stepKey}" data-index="${i}" class="step-check" ${checked}>
+        <label for="${cid}">${step}</label>
+      </li>`;
+    });
+    html += `</ul>`;
+  });
+
+  if (r.source) {
+    html += `<p class="source-line">Bron: ${r.source.label} — <a href="${r.source.url}" target="_blank" rel="noopener">${r.source.url}</a></p>`;
+  }
+
+  detailContent.innerHTML = html;
+
+  detailContent.querySelectorAll('input[type="checkbox"]').forEach(cb => {
+    cb.addEventListener('change', () => {
+      const key = cb.dataset.key;
+      const idx = cb.dataset.index;
+      const state = getChecked(key);
+      state[idx] = cb.checked;
+      setChecked(key, state);
+    });
+  });
+}
+
+const wishlistEl = document.getElementById('wishlist-view');
+const wishlistListEl = document.getElementById('wishlist-list');
+const wishlistEmptyEl = document.getElementById('wishlist-empty');
+const wishlistInputEl = document.getElementById('wishlist-input');
+
+function showDetail(id){
+  const r = recipes.find(x => x.id === id);
+  if (!r) return;
+  renderDetail(r);
+  document.querySelector('header.top .search-wrap').style.display = 'none';
+  document.querySelector('.wishlist-toggle').style.display = 'none';
+  listEl.style.display = 'none';
+  emptyEl.style.display = 'none';
+  wishlistEl.style.display = 'none';
+  detailEl.style.display = 'block';
+  window.scrollTo(0,0);
+  location.hash = id;
+}
+
+function showList(){
+  detailEl.style.display = 'none';
+  wishlistEl.style.display = 'none';
+  document.querySelector('header.top .search-wrap').style.display = 'block';
+  document.querySelector('.wishlist-toggle').style.display = 'inline-block';
+  listEl.style.display = 'flex';
+  history.replaceState(null, '', location.pathname);
+  renderList(searchEl.value);
+}
+
+function getWishlist(){
+  try{
+    return JSON.parse(localStorage.getItem('kookboek-wishlist') || "[]");
+  }catch(e){ return []; }
+}
+function setWishlist(items){
+  try{ localStorage.setItem('kookboek-wishlist', JSON.stringify(items)); }catch(e){}
+}
+
+function renderWishlist(){
+  const items = getWishlist();
+  wishlistListEl.innerHTML = "";
+  wishlistEmptyEl.style.display = items.length === 0 ? 'block' : 'none';
+
+  items.forEach(item => {
+    const li = document.createElement('li');
+    li.className = 'check-item wishlist-item';
+    const cid = 'wish-' + item.id;
+    li.innerHTML = `
+      <input type="checkbox" id="${cid}" ${item.done ? 'checked' : ''}>
+      <label for="${cid}">${item.text}</label>
+      <button class="delete-btn" aria-label="Verwijderen">×</button>
+    `;
+    li.querySelector('input').addEventListener('change', (e) => {
+      const all = getWishlist();
+      const found = all.find(x => x.id === item.id);
+      if (found) found.done = e.target.checked;
+      setWishlist(all);
+    });
+    li.querySelector('.delete-btn').addEventListener('click', () => {
+      const all = getWishlist().filter(x => x.id !== item.id);
+      setWishlist(all);
+      renderWishlist();
+    });
+    wishlistListEl.appendChild(li);
+  });
+}
+
+function addWishlistItem(){
+  const text = wishlistInputEl.value.trim();
+  if (!text) return;
+  const items = getWishlist();
+  items.unshift({ id: Date.now().toString(), text, done: false });
+  setWishlist(items);
+  wishlistInputEl.value = "";
+  renderWishlist();
+}
+
+wishlistInputEl.addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') addWishlistItem();
+});
+
+function showWishlist(){
+  listEl.style.display = 'none';
+  emptyEl.style.display = 'none';
+  detailEl.style.display = 'none';
+  document.querySelector('header.top .search-wrap').style.display = 'none';
+  document.querySelector('.wishlist-toggle').style.display = 'none';
+  wishlistEl.style.display = 'block';
+  renderWishlist();
+  window.scrollTo(0,0);
+}
+
+searchEl.addEventListener('input', () => renderList(searchEl.value));
+
+const initialId = location.hash.replace('#', '');
+renderList('');
+if (initialId && recipes.some(r => r.id === initialId)) {
+  showDetail(initialId);
+}
+</script>
+
+</body>
+</html>
